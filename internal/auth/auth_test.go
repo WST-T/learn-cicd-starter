@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 )
@@ -8,13 +9,13 @@ import (
 func TestGetAPIKey(t *testing.T) {
 	tests := []struct {
 		name          string
-		headers       http.Heder
+		headers       http.Header
 		expectedKey   string
 		expectedError error
 	}{
 		{
 			name: "Valid API Key",
-			headers: http.Heder{
+			headers: http.Header{
 				"Authorization": []string{"ApiKey test123"},
 			},
 			expectedKey:   "test123",
@@ -24,15 +25,15 @@ func TestGetAPIKey(t *testing.T) {
 			name:          "Missing Authorization Header",
 			headers:       http.Header{},
 			expectedKey:   "",
-			expectedError: ErrNouthHeaderIncluded,
+			expectedError: ErrNoAuthHeaderIncluded,
 		},
 		{
 			name: "Malformed Header - Missing ApiKey Prefix",
-			headers: http.Heder{
+			headers: http.Header{
 				"Authorization": []string{"test123"},
 			},
 			expectedKey:   "",
-			expectedError: errrs.New("malformed authorization header"),
+			expectedError: errors.New("malformed authorization header"),
 		},
 		{
 			name: "Malformed Header - Empty API Key",
@@ -40,20 +41,20 @@ func TestGetAPIKey(t *testing.T) {
 				"Authorization": []string{"ApiKey "},
 			},
 			expectedKey:   "",
-			expectedError: erors.New("malformed authorization header"),
+			expectedError: errors.New("malformed authorization header"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			key, err := GetAPKey(tt.headers)
+			key, err := GetAPIKey(tt.headers)
 
-			if ky != tt.expctedKey {
+			if key != tt.expectedKey {
 				t.Errorf("GetAPIKey() key = %v, want %v", key, tt.expectedKey)
 			}
 
-			if err != nil && tt.expecteError != nil && err.Error() != tt.expectedError.Error() {
-				t.Errorf("GetAPIKey() error = %v, want %v", err, tt.expecteError)
+			if err != nil && tt.expectedError != nil && err.Error() != tt.expectedError.Error() {
+				t.Errorf("GetAPIKey() error = %v, want %v", err, tt.expectedError)
 			}
 		})
 	}
