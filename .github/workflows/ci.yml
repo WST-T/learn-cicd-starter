@@ -21,6 +21,17 @@ jobs:
       - name: Print go version
         run: go test -cover ./...
 
+      - name: Install gosec
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          echo "$HOME/go/bin" >> $GITHUB_PATH
+
+      - name: Verify gosec installation
+        run: gosec --version
+
+      - name: Run gosec
+        run: gosec ./...
+
   style:
     name: Style
     runs-on: ubuntu-latest
